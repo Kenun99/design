@@ -5,6 +5,7 @@ The Ethereum Environment Interface exposes the core Ethereum API to the ewasm en
 # Data types
 
 We define the following Ethereum data types:
+
 - `bytes`: an array of bytes with unrestricted length
 - `bytes32`: an array of 32 bytes
 - `address`: an array of 20 bytes
@@ -12,6 +13,7 @@ We define the following Ethereum data types:
 - `u256`: a 256 bit number, represented as a 32 bytes long little endian unsigned integer in memory
 
 We also define the following WebAssembly data types:
+
 - `i32`: same as `i32` in WebAssembly
 - `i32ptr`: same as `i32` in WebAssembly, but treated as a pointer to a WebAssembly memory offset
 - `i64`: same as `i64` in WebAssembly
@@ -593,4 +595,106 @@ Get the block’s timestamp.
 
 **Returns**
 
-`blockTimestamp` **i64**
+`blockTimestamp` **i64
+
+
+
+## EXTCODEHASH
+
+Constantinople hardfork, EIP-1052: get tge hash of the contract bytecode at address
+
+**Parameters**
+
+-   `addressOffset` **i32ptr** the memory offset to load the address from (`address`)
+-   `resultOffset` **i32ptr** the memory offset to load the hash into (`bytes32`)
+
+**Returns**
+
+nothing
+
+**Trap conditions**
+
+- store to memory at `resultOffset` results in out of bounds access (also checked on failure).
+
+
+
+## CHAINID
+
+Istanbul hardfork, EIP-1344: current network's chain id
+
+**Parameters**
+
+*none*
+
+**Returns**
+
+`chainid` **i64**
+
+```
+chain_id = {  1 // mainnet
+           {  2 // Morden testnet (disused)
+           {  2 // Expanse mainnet
+           {  3 // Ropsten testnet
+           {  4 // Rinkeby testnet
+           {  5 // Goerli testnet
+           { 42 // Kovan testnet
+           { ...
+```
+
+
+
+## SELFBALANCE
+
+Istanbul hardfork, EIP-1884: balance of the executing contract in wei
+
+**Parameters**
+
+-   `resultOffset` **i32ptr** the memory offset to load the balance into (`u128`)
+
+**Returns**
+
+*nothing*
+
+**Trap conditions**
+
+- store to memory at `resultOffset` results in out of bounds access.
+
+
+
+## BASEFEE
+
+London hardfork, EIP-3198: current block's base fee
+
+**Parameters**
+
+*none*
+
+**Returns**
+
+`fee` **i64**
+
+
+
+## Create2
+
+Constantinople harfork, EIP-1014: creates a child contract with a deterministic address
+
+**Parameters**
+
+-   `valueOffset` **i32ptr** the memory offset to load the value from (`u128`)
+-   `dataOffset` **i32ptr** the memory offset to load the code for the new contract from (`bytes`)
+-   `dataLength` **i32** the data length
+-   `saltOffset` **i32ptr** the memory offset to load the salt
+-   `resultOffset` **i32ptr** the memory offset to write the new contract address to (`address`)
+
+*Note*: `create` will clear the return buffer in case of success or may fill it with data coming from `revert`.
+
+**Returns**
+
+`result` **i32** Returns 0 on success, 1 on failure and 2 on `revert`
+
+**Trap conditions**
+
+- load `u128` from memory at `valueOffset` results in out of bounds access,
+- load `dataLength` number of bytes from memory at `dataOffset` results in out of bounds access.
+- store `address` to memory at `resultOffset` results in out of bounds access.
